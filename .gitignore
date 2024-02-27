@@ -70,3 +70,11 @@ archive.zip
 
 # macOS
 .DS_Store
+
+/backend/app/books.pkl
+
+/backend/app/popular.pkl
+
+/backend/app/pt.pkl
+
+/backend/app/similarity_scores.pkl
