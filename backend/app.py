@@ -17,7 +17,7 @@ size = 10
 
 
 @app.route("/popular/<page_number>")
-def popular(    page_number):
+def popular(page_number):
     # print(page_number)
     
     list_popular = popular_df[size*(int(page_number)-1) : size*int(page_number)].values.tolist()
@@ -65,11 +65,6 @@ def recommended(book_name):
         data.append(item)
 
     return data
-
-
-
-
-
 
 
 if __name__ == "__main__":
