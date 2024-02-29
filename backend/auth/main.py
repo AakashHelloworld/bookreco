@@ -64,7 +64,7 @@ def siginup():
         if {'username', 'password'} <= request.json.keys():
             username = request.json['username']
             password = request.json['password']
-            hashed_password = generate_password_hash(password, method='sha256')
+            hashed_password = generate_password_hash(password)
             new_user = User(username, hashed_password)
             db.session.add(new_user)
             db.session.commit()
