@@ -4,68 +4,195 @@ import pickle
 import numpy as np
 
 
+# app = Flask(__name__)
+
+# popular_df = pickle.load(open('popular.pkl', 'rb'))
+# pt = pickle.load(open('pt.pkl','rb'))
+# # print(type(pt))
+# books = pickle.load(open('books.pkl','rb'))
+# # print(type(books))
+# similarity_scores = pickle.load(open('similarity_scores.pkl','rb'))
+
+# size = 10
+
+
+# @app.route("/popular/<page_number>")
+# def popular(page_number):
+#     # print(page_number)
+    
+#     list_popular = popular_df[size*(int(page_number)-1) : size*int(page_number)].values.tolist()
+
+#     # print(list_popular)
+#     return list_popular
+
+
+# def recommend_book(book_name):
+#     # index fetch
+#     index = np.where(pt.index==book_name)[0][0]
+#     similar_items = sorted(list(enumerate(similarity_scores[index])),key=lambda x:x[1],reverse=True)[1:5]
+    
+#     data = []
+#     for i in similar_items:
+#         item = []
+#         temp_df = books[books['Book-Title'] == pt.index[i[0]]]
+#         item.extend(list(temp_df.drop_duplicates('Book-Title')['Book-Title'].values))
+#         item.extend(list(temp_df.drop_duplicates('Book-Title')['Book-Author'].values))
+#         item.extend(list(temp_df.drop_duplicates('Book-Title')['Image-URL-M'].values))
+        
+#         data.append(item)
+    
+#     return data
+
+# # print(recommend_book("Animal Farm"))
+
+# @app.route("/books-recommended/<book_name>")
+# def recommended(book_name):
+#     # print(pt.index, pt)
+#     print(type(book_name))
+#     print(book_name)
+#     index = np.where(pt.index == "Clara Callan")[0][0]
+#     # print(index)
+#     similar_items = sorted(list(enumerate(similarity_scores[index])),key=lambda x:x[1],reverse=True)[1:5]
+    
+#     data = []
+#     for i in similar_items:
+#         item = []
+#         temp_df = books[books['Book-Title'] == pt.index[i[0]]]
+#         item.extend(list(temp_df.drop_duplicates('Book-Title')['Book-Title'].values))
+#         item.extend(list(temp_df.drop_duplicates('Book-Title')['Book-Author'].values))
+#         item.extend(list(temp_df.drop_duplicates('Book-Title')['Image-URL-M'].values))
+        
+#         data.append(item)
+
+#     return data
+
+
+
+
+
+
+
+
+
+
+from flask import Flask 
+from flask_sqlalchemy import SQLAlchemy 
+from sqlalchemy import Column, String, Integer
+from flask import jsonify, request
+from werkzeug.security import check_password_hash, generate_password_hash
+
+import jwt
+import datetime
+import os
+import json
+
+
+
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["JWT_SECRET"] = "jwt-secret-text"
 
-popular_df = pickle.load(open('popular.pkl', 'rb'))
-pt = pickle.load(open('pt.pkl','rb'))
-# print(type(pt))
-books = pickle.load(open('books.pkl','rb'))
-# print(type(books))
-similarity_scores = pickle.load(open('similarity_scores.pkl','rb'))
-
-size = 10
+db = SQLAlchemy(app)
 
 
-@app.route("/popular/<page_number>")
-def popular(page_number):
-    # print(page_number)
+
+class User(db.Model):
+    id = Column(Integer, primary_key=True)
+    username = Column(String(20), nullable=False, unique=True)
+    password = Column(String(100), nullable=False)
+
+    def __init__(self, username, password): 
+        self.username = username
+        self.password = password 
+
+    def __repr__(self): 
+        return "<User(%s,%s)>" % (self.username, self.password)
+
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.data.decode("utf-8")
+    json_data = json.loads(data)
+    username = json_data["username"]
+    password = json_data["password"]
     
-    list_popular = popular_df[size*(int(page_number)-1) : size*int(page_number)].values.tolist()
-
-    # print(list_popular)
-    return list_popular
-
-
-def recommend_book(book_name):
-    # index fetch
-    index = np.where(pt.index==book_name)[0][0]
-    similar_items = sorted(list(enumerate(similarity_scores[index])),key=lambda x:x[1],reverse=True)[1:5]
+    if (username and password):
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({"message": "User doesn't exist, please login", "success": False}), 401
+        if check_password_hash(str(user.password), password):
+            token = jwt.encode({'id': user.id,
+                                'exp': datetime.datetime.now() + datetime.timedelta(days=30)},
+                               app.config['JWT_SECRET'], algorithm="HS256")
+            
+            print(token)
+            return jsonify({'token': token})
+        return jsonify({'message': 'Invalid credentials', 'success': False}), 401
     
-    data = []
-    for i in similar_items:
-        item = []
-        temp_df = books[books['Book-Title'] == pt.index[i[0]]]
-        item.extend(list(temp_df.drop_duplicates('Book-Title')['Book-Title'].values))
-        item.extend(list(temp_df.drop_duplicates('Book-Title')['Book-Author'].values))
-        item.extend(list(temp_df.drop_duplicates('Book-Title')['Image-URL-M'].values))
+    else:
+        return jsonify({'message': 'No credentials', 'success': False}), 400
+
+
+@app.route("/signup", methods=["POST"])
+def siginup(): 
+    try:
+        if {'username', 'password'} <= request.json.keys():
+            username = request.json['username']
+            password = request.json['password']
+            hashed_password = generate_password_hash(password)
+            new_user = User(username, hashed_password)
+            db.session.add(new_user)
+            db.session.commit()
+            return jsonify({'message': "User successfully created"}), 200
+        else:
+            return jsonify({'message': 'Please submi0t a username and a password', 'success': False}), 400
+    except Exception as e:
+        if os.environ.get('ENV', None) == 'production':
+            return jsonify({'message': 'Something went wrong', 'success': False}), 500
+        else:
+            return jsonify({'message': str(e), 'success': False}), 500
         
-        data.append(item)
-    
-    return data
 
-# print(recommend_book("Animal Farm"))
 
-@app.route("/books-recommended/<book_name>")
-def recommended(book_name):
-    # print(pt.index, pt)
-    print(type(book_name))
-    print(book_name)
-    index = np.where(pt.index == "Clara Callan")[0][0]
-    # print(index)
-    similar_items = sorted(list(enumerate(similarity_scores[index])),key=lambda x:x[1],reverse=True)[1:5]
-    
-    data = []
-    for i in similar_items:
-        item = []
-        temp_df = books[books['Book-Title'] == pt.index[i[0]]]
-        item.extend(list(temp_df.drop_duplicates('Book-Title')['Book-Title'].values))
-        item.extend(list(temp_df.drop_duplicates('Book-Title')['Book-Author'].values))
-        item.extend(list(temp_df.drop_duplicates('Book-Title')['Image-URL-M'].values))
-        
-        data.append(item)
 
-    return data
+from functools import wraps
+def auth_required(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers or 'x-access-token' in request.headers or 'token' in request.json:
+            token = request.headers.get(
+                'x-access-token', None) or request.json.get('token', None) or request.headers.get('Authorization')
+            token = token.replace('Bearer ', '')
+        else:
+            return jsonify({'message': 'Token required', 'success': False})
+        try:
+            decoded = jwt.decode(token, app.config['JWT_SECRET'], algorithms=["HS256"])
+            user = User.query.filter_by(id=decoded['id']).first()
+            if not user:
+                return jsonify({'message': 'Invalid User', 'success': False})
+        except:
+            return jsonify({'message': 'Invalid Token', 'success': False})
+        return f(user, *args, **kwargs)
+    return decorator
+
+
+
+
+@app.route("/get-user", methods=["GET"])
+@auth_required
+def get_user(user):
+    user_data = {
+        'id': user.id,
+        'username': user.username
+    }
+    return {"success": True, "user": user_data}
 
 
 if __name__ == "__main__":
-    app.run( debug=True)
+    with app.app_context():
+        db.create_all()
+
+    app.run(port=8080, debug=True)
