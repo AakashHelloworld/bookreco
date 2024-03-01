@@ -11,8 +11,9 @@ export default function Home() {
 
           <div className="absolute inset-x-0 bottom-0 h-[100%] w-[100%] bg-gradient-to-br from-[#232e7f] to-[#f36026] opacity-80 z-10 flex items-end">
           <div className="text-white mb-10 ml-10 ">
-            <h1 className=" text-4xl font-bold">BookReco</h1>
-            <p className="text-xl font-medium mt-2">Platfom for your favorite books.</p>
+            <img src="/images/logo.svg" className="h-[200px] w-[200px]" />
+            {/* <h1 className=" text-4xl font-bold">BookReco</h1> */}
+            <p className="text-xl font-medium mt-[-50px]">Platfom for your favorite books.</p>
             </div>
           </div>
 
@@ -20,8 +21,6 @@ export default function Home() {
 
         <div className="w-[40%] flex flex-col items-center justify-center">
           <div className="flex flex-col gap-2">
-         <h1 className="font-semibold text-3xl">Login to your account</h1>
-         <p className="opacity-70 text-sm mb-4">Authenticate with Google</p>
          <Login />
          </div>
         </div>
