@@ -90,7 +90,7 @@ export default function HoverCardContainer({book}: {book: any}) {
           <p title={book?.Description}><span className="text-sm font-semibold" >Description: </span>{book?.Description?.length > 100  ? book?.Description?.slice(0, 100) + "..." : book.Book_Title}</p>
           <p  className="text-[orange]"><span className="text-sm font-semibold text-[black]" >Good Read Rating: </span>{book?.Rating}</p>
           
-          <p><span className="text-sm font-semibold" >ISBN: </span>{book?.ISBN}</p>
+          <p><span className="text-sm font-semibold" >ISBN: </span>{book?.ISBN}</p> 
 
           <p><span className="text-sm font-semibold" >Publisher: </span>{book?.Publisher}</p>
 
