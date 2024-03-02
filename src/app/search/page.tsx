@@ -14,6 +14,7 @@ import { useSearchParams } from "next/navigation";
 import PaginationContainer from "@/components/shared/PaginationContainer";
 import { usePopular } from "@/hooks/usePopular";
 import { useRecomendation } from "@/hooks/useRecomendation";
+import HoverCardContainer from "@/components/shared/HoverCardContainer";
 export default function Search() {
   const searchParams = useSearchParams();
 
@@ -46,55 +47,21 @@ export default function Search() {
             
             { !searchBook &&
              populars?.data?.length &&   populars?.data.map((book: any) => (
-                <HoverCard>
-                <HoverCardTrigger>
-                    <Card
-                        className="h-[300px] w-[200px] cursor-pointer overflow-hidden "
-                        key={book?.Book_Title}>
-                        <div className="h-[80%] w-full overflow-hidden">
-                        <img className="h-full w-full object-cover" src={book?.Image_URL_M} alt={book.Book_Title} />
-                        </div>
-                        <h1 title={book.name} className="font-semibold text-sm m-2"> <span className="opacity-70 text-sm">Name: </span>{ book?.Book_Title.length > 15  ? book?.Book_Title?.slice(0, 15) + "..." : book?.Book_Title}</h1>
-                        <p title={book.author} className="font-semibold text-sm m-2"><span className="opacity-70 text-sm">Author: </span>{ book?.Book_Author?.length > 15  ? book?.Book_Author?.slice(0, 15) + "..." : book?.Book_Author}</p>
-                       
-                    </Card>
-                </HoverCardTrigger>
-
-                    <HoverCardContent className="h-[300px] w-[300px] flex flex-col justify-between" align="start" side="right">
-                        <p><span className="text-sm font-semibold" >Description: </span>{book?.Book_Title?.length > 100  ? book?.Book_Title?.slice(0, 200) + "..." : book.Book_Title}</p>
-                        <Rating style={{ maxWidth: 150 }} value={rating} onChange={setRating} radius="small" itemStyles={myStyles} />
-                </HoverCardContent>
-                </HoverCard>
-                ))
+              <HoverCardContainer book={book} />
+              ))
             }
 
             {
 
               searchBook &&
 
-              recomendationBooks?.data?.length &&   recomendationBooks?.data.map((book: any) => (
-                <HoverCard>
-                <HoverCardTrigger>
-                    <Card
-                        className="h-[300px] w-[200px] cursor-pointer overflow-hidden "
-                        key={book?.ISBN}>
-                        <div className="h-[80%] w-full overflow-hidden">
-                        <img className="h-full w-full object-cover" src={book?.Image_URL_M} alt={book.Book_Title} />
-                        </div>
-                        <h1 title={book.Book_Title} className="font-semibold text-sm m-2"> <span className="opacity-70 text-sm">Name: </span>{ book?.Book_Title.length > 15  ? book?.Book_Title?.slice(0, 15) + "..." : book?.Book_Title}</h1>
-                        <p title={book.author} className="font-semibold text-sm m-2"><span className="opacity-70 text-sm">Author: </span>{ book?.Book_Author?.length > 15  ? book?.Book_Author?.slice(0, 15) + "..." : book?.Book_Author}</p>
-                       
-                    </Card>
-                </HoverCardTrigger>
-
-                    <HoverCardContent className="h-[300px] w-[300px] flex flex-col justify-between" align="start" side="right">
-                        <p><span className="text-sm font-semibold" >Description: </span>{book?.Book_Title?.length > 100  ? book?.Book_Title?.slice(0, 200) + "..." : book.Book_Title}</p>
-                        <Rating style={{ maxWidth: 150 }} value={rating} onChange={setRating} radius="small" itemStyles={myStyles} />
-                </HoverCardContent>
-                </HoverCard>
-
-                
-              ))
+              recomendationBooks?.data?.length &&   recomendationBooks?.data.map((book: any, index: number) => {
+                  if (index === 0) {
+                    return 
+                  } 
+                return(
+                <HoverCardContainer book={book} />
+              )})
             }
 
 

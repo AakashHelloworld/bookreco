@@ -1,24 +1,20 @@
 "use client"
-// import React, { useState } from "react"
-import { Card } from "@/components/ui/card"
-import {
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger,
-  } from "@/components/ui/hover-card"
-import { Rating , Heart} from '@smastrom/react-rating'
-import React, { useState, useEffect } from "react"
+import React from "react"
 import { usePopular } from "@/hooks/usePopular"
 import '@smastrom/react-rating/style.css'
+import { useGlobalContext } from "@/provider/state-manager";  
+import HoverCardContainer from "@/components/shared/HoverCardContainer"
 
+
+interface Context {
+    state?: {
+        username: string;
+        id: string;
+        }
+    dispatch?: (value: { type: "SET_COMPLETED" , payload: boolean}) => void    
+  }
 export default function Favourite() {
-    const [rating, setRating] = React.useState(0)
-    const myStyles = {
-        itemShapes: Heart,
-        activeFillColor: '#ff41b4',
-        inactiveFillColor: '#ffd7ef'
-      }
-
+    const { state  }: Context = useGlobalContext()
       const {data:populars, isLoading:popularLoading} = usePopular({pagenumber: 1, page_size: 50})
 
       
@@ -91,7 +87,9 @@ export default function Favourite() {
         <div className="flex flex-col gap-2 p-4">
         <div className="flex flex-col gap-2">
           <h1 className="font-semibold text-3xl">Welcome</h1>
-          <p className="opacity-70 text-sm mb-4">Aakash Bandhu Aryal</p>
+          <p className="opacity-70 text-sm mb-4 capitalize">
+            {state?.username}
+          </p>
         </div>
 
         <div>
@@ -101,25 +99,8 @@ export default function Favourite() {
         <div className="flex flex-wrap gap-14 w-full justify-center border border-slate-200 rounded-lg p-4 h-[450px] overflow-y-scroll">
             {
           populars?.data?.length &&  populars?.data?.map((book : any) => (
-                    <HoverCard>
-                    <HoverCardTrigger>
-                        <Card
-                            className="h-[300px] w-[200px] cursor-pointer overflow-hidden "
-                            key={book?.Book_Title}>
-                            <div className="h-[80%] w-full overflow-hidden">
-                            <img className="h-full w-full object-cover" src={book?.Image_URL_M} alt={book.name} />
-                            </div>
-                            <h1 title={book.name} className="font-semibold text-sm m-2"> <span className="opacity-70 text-sm">Name: </span>{ book?.Book_Title.length > 15  ? book?.Book_Title?.slice(0, 15) + "..." : book?.Book_Title}</h1>
-                            <p title={book.author} className="font-semibold text-sm m-2"><span className="opacity-70 text-sm">Author: </span>{ book?.Book_Author?.length > 15  ? book?.Book_Author?.slice(0, 15) + "..." : book?.Book_Author}</p>
-                           
-                        </Card>
-                    </HoverCardTrigger>
+            <HoverCardContainer book={book}/>
 
-                        <HoverCardContent className="h-[300px] w-[300px] flex flex-col justify-between" align="start" side="right">
-                            <p><span className="text-sm font-semibold" >Description: </span>{book?.Book_Title?.length > 100  ? book?.Book_Title?.slice(0, 200) + "..." : book.Book_Title}</p>
-                            <Rating style={{ maxWidth: 250 }} value={rating} onChange={setRating} radius="small" itemStyles={myStyles} />
-                    </HoverCardContent>
-                    </HoverCard>
                 ))
 
 

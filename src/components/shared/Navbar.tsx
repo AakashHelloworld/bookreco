@@ -1,5 +1,5 @@
 "use client"
-import React from "react";
+import React, { useEffect , useState} from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
     DropdownMenu,
@@ -14,11 +14,56 @@ import { CgProfile } from "react-icons/cg";
 import { Input } from "../ui/input";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
+import {URL} from "@/data/URL"
+import { useGetMe } from "@/hooks/useGetMe";
+import { useGlobalContext } from "@/provider/state-manager";  
+interface Context {
+  state?: {
+      username: string;
+      password: string;
+      }
+  dispatch?: (value: { type: string , payload: boolean}) => void
+}
+
+
 
 
 export default function Navbar() {
     const router = useRouter();
     const [text, setText] = React.useState("");
+    const { state,  dispatch}: Context = useGlobalContext()
+    const [user, setUser] = useState<any>();
+
+    const fetchAPI =  () => {
+
+            const response = fetch(URL + `get-user`,{
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+              },
+              body: JSON.stringify({})
+            }).then((res) => res.json()).then((data) =>
+           { 
+            console.log(data)
+            setUser(data)}
+            )
+    
+      }
+      useEffect(() => {
+          fetchAPI()
+      }, []);
+    
+    
+      useEffect(() => {
+          if(user?.success == false){
+              router.push("/")
+          }
+          if(user?.user && dispatch)
+                dispatch({type: "ADD_USER", payload: user?.user} as any)
+          
+      },[user])
+
 
     const submitHandler = (e : any) => {
         e.preventDefault();
@@ -47,7 +92,7 @@ export default function Navbar() {
                  </DropdownMenuTrigger>
                 <DropdownMenuContent className="mr-5">
                 <DropdownMenuLabel>User</DropdownMenuLabel>
-                <span className="text-sm px-2 opacity-70">Aakash Bandhu Aryal</span>
+                <span className="text-sm px-2 opacity-70">{user?.user?.username ? user?.user?.username : "----"}</span>
                 <DropdownMenuSeparator />
 
                     <Link href="/profile" >
@@ -57,7 +102,10 @@ export default function Navbar() {
                     </DropdownMenuItem>
                     </Link>
                     <Link href="/" >
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                    localStorage.setItem("token", "")
+                    router.push("/")
+                }}>
                     <MdLogout style={{ fontSize: "20px" }} /> <span className="ml-2">Logout</span>
                 </DropdownMenuItem>
                 </Link>
