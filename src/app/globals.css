@@ -75,6 +75,13 @@
   }
 }
 
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 ::-webkit-scrollbar {
   width: 4px;
   border: 1px solid #d5d5d5;
